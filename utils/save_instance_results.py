@@ -15,14 +15,14 @@ def save_instance_results(
     Automatically creates the CSV header if the file does not exist.
 
     Args:
-        instance_id (int or str): The problem instance number.
+        instance_id (Union[int, str]): The problem instance number (1-4).
         nb_qubits (int): The number of qubits used in the quantum circuit.
         nb_gates (int): The total number of gate operations executed.
         exec_time (float): The execution time in seconds.
         file_path (str): The path to the CSV file where data will be appended.
 
     Returns:
-        None. Prints a success message and writes to CSV file.
+        None. Prints success message and writes to CSV file.
     """
     header = [
         "CVRP Instance #",
@@ -41,4 +41,4 @@ def save_instance_results(
 
         writer.writerow(row)
 
-    print(f"✅ Données de l'instance {instance_id} ajoutées à {file_path}")
+    print(f"✅ Instance {instance_id} metrics saved to {file_path}")

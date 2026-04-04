@@ -6,7 +6,8 @@ from qiskit_aer import AerSimulator
 
 def run_qc(circuit: QuantumCircuit) -> Tuple:
     """
-    Executes a quantum circuit using AerSimulator and collects metrics.
+    Executes a quantum circuit using AerSimulator and collects performance metrics.
+    Runs the circuit with 1024 shots and returns execution results with qubit and gate counts.
 
     Args:
         circuit (QuantumCircuit): The quantum circuit to execute.
