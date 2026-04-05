@@ -296,11 +296,8 @@ Set the desired instance in `main.py` or pass it as an argument:
 # Run a specific instance (e.g., Instance 3)
 python main.py 3
 
-# Run ALL instances (1-5) sequentially
+# Run ALL instances (1-4) sequentially
 python main.py 0
-
-# Run only the supplement instance (Instance 5) with plotting
-python main.py 5
 ```
 
 **Outputs written to results/:**
