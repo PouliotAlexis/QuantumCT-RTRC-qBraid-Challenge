@@ -42,7 +42,7 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int
     vqe = SamplingVQE(
         sampler=sampler, 
         ansatz=ansatz_transpiled, 
-        optimizer=COBYLA(maxiter=1000)
+        optimizer=COBYLA(maxiter=1500)
     )
 
     # 5. Solve using Minimum Eigen Optimizer
