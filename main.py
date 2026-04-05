@@ -66,11 +66,15 @@ def main(instance_id: int, show_plot: bool = True) -> None:
     while len(all_routes) < num_vehicles:
         all_routes.append([0, 0])
 
+    import os
+    data_dir = f"results/instance_{instance_id}"
+    os.makedirs(data_dir, exist_ok=True)
+    
     # 4. Save results in the official format
     save_solution_to_txt(
         instance_id,
         all_routes,
-        data_dir="data",
+        data_dir=data_dir,
     )
 
     # 5. Log metrics and performance data
@@ -80,7 +84,7 @@ def main(instance_id: int, show_plot: bool = True) -> None:
         nb_total_gate,
         max_depth,
         time() - start_time,
-        "data/run_results.csv",
+        "results/all_run_results.csv",
         total_distance,
         all_routes,
         data_instance,
