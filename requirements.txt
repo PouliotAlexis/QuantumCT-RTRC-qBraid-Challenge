@@ -1,7 +1,7 @@
+matplotlib
 numpy
 scipy
 qiskit
 qiskit-aer
 qiskit-algorithms
 qiskit-optimization
-pytest
