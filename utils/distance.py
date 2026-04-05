@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def get_distance_matrix(nodes: dict[int, tuple[float, float]]) -> np.ndarray:
+def compute_distance_matrix(nodes: dict[int, tuple[float, float]]) -> np.ndarray:
     """
     Computes the Euclidean distance matrix for a set of nodes.
 
@@ -9,8 +9,8 @@ def get_distance_matrix(nodes: dict[int, tuple[float, float]]) -> np.ndarray:
         nodes (dict): A dictionary {id: (x, y)} representing the nodes.
 
     Returns:
-        ndarray: A NumPy distance matrix of shape (n, n) where element [i, j] is the Euclidean distance
-                 between node i and node j.
+        ndarray: A NumPy distance matrix of shape (n, n) where element [i, j] 
+                 is the Euclidean distance between node i and node j.
     """
     # Convert coordinates to NumPy array (n, 2)
     coords = np.array(list(nodes.values()))
@@ -24,11 +24,11 @@ def get_distance_matrix(nodes: dict[int, tuple[float, float]]) -> np.ndarray:
     return dist_matrix
 
 
-def get_distance_matrix_with_ids(
+def compute_distance_matrix_with_mapping(
     nodes: dict[int, tuple[float, float]],
 ) -> tuple[np.ndarray, list[int]]:
     """
-    Computes the Euclidean distance matrix and returns the mapping of indices to node IDs.
+    Computes Euclidean distance matrix and returns index-to-node ID mapping.
 
     Args:
         nodes (dict): A dictionary {id: (x, y)} representing the nodes.
@@ -36,30 +36,30 @@ def get_distance_matrix_with_ids(
     Returns:
         tuple: (distance_matrix, node_ids_list) where:
                - distance_matrix: NumPy distance matrix of shape (n, n)
-               - node_ids_list: List of node IDs in the same order as the matrix rows/columns
+               - node_ids_list: List of node IDs in matrix row/column order
     """
     node_ids = list(nodes.keys())
-    dist_matrix = get_distance_matrix(nodes)
+    dist_matrix = compute_distance_matrix(nodes)
     return dist_matrix, node_ids
 
 
-def remap_route_indices(route: list[int], node_ids: list[int]) -> list[int]:
+def map_indices_to_node_ids(route_indices: list[int], node_ids: list[int]) -> list[int]:
     """
-    Remaps route indices from matrix indices to actual node IDs.
+    Maps matrix indices in a route back to their original node IDs.
 
     Args:
-        route (list[int]): Route with indices relative to the distance matrix (0 to n-1)
-        node_ids (list[int]): List of node IDs in the same order as matrix rows/columns
+        route_indices (list[int]): Route with matrix-relative indices (0 to n-1)
+        node_ids (list[int]): Ordered list of node IDs corresponding to matrix indices
 
     Returns:
-        list[int]: Route with actual node IDs
+        list[int]: Route updated with actual node IDs
     """
     try:
-        return [node_ids[int(idx)] for idx in route]
+        return [node_ids[int(idx)] for idx in route_indices]
     except (TypeError, ValueError) as e:
-        # Handle case where route might have nested structure
+        # Handle potentially nested structure or non-integer indices
         flat_route = []
-        for item in route:
+        for item in route_indices:
             if isinstance(item, (list, tuple)):
                 flat_route.extend(item)
             else:

@@ -3,22 +3,21 @@ import math
 DEPOT_NODE = (0, 0)
 
 
-def get_cluster_with_optimised_sweep(data_instance: dict) -> list[dict]:
+def cluster_nodes_by_sweep(data_instance: dict) -> list[dict]:
     """
-    Solves the Capacitated Vehicle Routing Problem (CVRP) using an optimized sweep algorithm.
+    Solves the Capacitated Vehicle Routing Problem (CVRP) by clustering customers 
+    using an optimized sweep algorithm.
 
-    This algorithm assigns customers to vehicles by calculating the polar angle of each node
-    relative to the depot, then rotates through different starting angles to find the partition
-    that minimizes the angular spread across all routes (vehicles).
+    Assigns customers to vehicles by calculating the polar angle of each node 
+    relative to the depot, then finds the partition that minimizes the angular spread 
+    across all vehicles.
 
     Args:
-        data_instance (dict): A dictionary containing problem data with keys:
-                             - "nodes" (list): A list of node coordinates.
-                             - "capacity" (int): Maximum number of customers per vehicle.
+        data_instance (dict): Problem data (nodes, capacity).
 
     Returns:
-        list[dict]: A list of clusters, where each cluster is a dictionary {id: (x, y)}.
-                    Each cluster represents a route for one vehicle.
+        list[dict]: List of clusters (node ID mapping to coordinates), 
+                   where each cluster represents a vehicle route.
     """
     nodes: list = data_instance["nodes"]
     capacity: int = data_instance["capacity"]
@@ -56,8 +55,7 @@ def get_cluster_with_optimised_sweep(data_instance: dict) -> list[dict]:
             lowest_angle_sum = current_angle_sum
             best_clusters = current_clusters
 
-    # Return clusters as list of dictionaries {id: (x, y)}
-    # Include the depot (id: 0) in every cluster
+    # Prepare final clusters with the depot (id: -1 to represent depot at 0,0)
     result = []
     for cluster in best_clusters:
         cluster_dict = {-1: tuple(DEPOT_NODE)}  # Start with depot
