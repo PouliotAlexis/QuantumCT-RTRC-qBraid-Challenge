@@ -38,7 +38,7 @@ Quantum algorithms offer a fundamentally different search strategy over the comb
 We employ a **"Cluster-First, Route-Second"** decomposition strategy — a principled divide-and-conquer approach that breaks the global CVRP into a series of small Traveling Salesman Problems (TSPs), each solvable by a quantum circuit.
 
 ```mermaid
-graph TD
+flowchart TD
     A["CVRP Instance
 (custom or Sets 1-4)"]
     B["Phase 1 — Classical
