@@ -1,0 +1,398 @@
+# Quantum Courier — Hybrid Quantum-Classical CVRP Solver
+### Yale Hackathon 2026 · RTX (RTRC) × QuantumCT × qBraid
+
+> A **NISQ-aware hybrid solver** for the Capacitated Vehicle Routing Problem, combining a novel rotation-optimized sweep algorithm with two quantum backends: **SamplingVQE** for high-fidelity simulation and **QAOA** as the path-to-real-hardware implementation.
+
+---
+
+## Table of Contents
+
+1. [Problem & Motivation](#1-problem--motivation)
+2. [Architecture Overview](#2-architecture-overview)
+3. [Key Innovations](#3-key-innovations)
+4. [Phase 1 — Rotation-Optimized Sweep Clustering](#4-phase-1--rotation-optimized-sweep-clustering)
+5. [Phase 2 — Dual Quantum Backend Strategy](#5-phase-2--dual-quantum-backend-strategy)
+   - [5a. SamplingVQE — Primary Solver (Simulation)](#5a-samplingvqe--primary-solver-simulation)
+   - [5b. QAOA — Real Hardware Implementation](#5b-qaoa--real-hardware-implementation)
+6. [Quantum Resource Analysis](#6-quantum-resource-analysis)
+7. [Results](#7-results)
+8. [Repository Structure](#8-repository-structure)
+9. [Setup & Usage](#9-setup--usage)
+10. [Scalability & Future Work](#10-scalability--future-work)
+11. [Development Team](#11-development-team)
+
+---
+
+## 1. Problem & Motivation
+
+The **Capacitated Vehicle Routing Problem (CVRP)** asks: *given a depot and a set of customers with known demands, find the minimum-cost set of routes for a fleet of capacity-limited vehicles.*
+
+It is **NP-hard** — solution space grows exponentially with problem size, making it intractable for classical exact solvers at scale. Even a **0.5% improvement** in route quality translates to millions of dollars in annual logistics savings for companies like RTX.
+
+Quantum algorithms offer a fundamentally different search strategy over the combinatorial solution space. Our goal is to demonstrate a **practical, resource-efficient hybrid approach** that produces high-quality solutions on today's simulators, while remaining ready to deploy on real quantum hardware as it matures.
+
+---
+
+## 2. Architecture Overview
+
+We employ a **"Cluster-First, Route-Second"** decomposition strategy — a principled divide-and-conquer approach that breaks the global CVRP into a series of small Traveling Salesman Problems (TSPs), each solvable by a quantum circuit.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   CVRP Instance                     │
+│            (customers + depot + capacity)           │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│         Phase 1 — Classical Clustering              │
+│      Rotation-Optimized Sweep Algorithm             │
+│   → Partitions customers into compact sectors       │
+│   → Each sector ≤ vehicle capacity (n ≤ 4 nodes)    │
+└────────────────────┬────────────────────────────────┘
+                     │  One TSP sub-problem per cluster
+                     ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                Phase 2 — Quantum Routing                         │
+│                                                                  │
+│   ┌─────────────────────────┐   ┌──────────────────────────────┐ │
+│   │  SamplingVQE (primary)  │   │  QAOA (real hardware path)   │ │
+│   │  RealAmplitudes ansatz  │   │  Fixed-structure circuit     │ │
+│   │  AerSimulator backend   │   │  StatevectorSampler          │ │
+│   │  → Used for results     │   │  → Ready for QPU deployment  │ │
+│   └─────────────────────────┘   └──────────────────────────────┘ │
+└────────────────────┬─────────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│            Full CVRP Solution                       │
+│     Merged routes in hackathon submission format    │
+└─────────────────────────────────────────────────────┘
+```
+
+This hybrid design is **intentional**: classical computers excel at geometric partitioning; quantum computers offer a search advantage on discrete combinatorial optimization. We let each do what it does best — and we provide two quantum backends, each optimized for a different execution context.
+
+---
+
+## 3. Key Innovations
+
+### 🔄 Novel: Rotation-Optimized Sweep
+Standard sweep algorithms use a fixed starting angle, which can produce suboptimal cluster boundaries by accident of geometry. Our implementation **exhaustively searches all possible starting angles** and selects the partition that minimizes total angular spread across all clusters. This guarantees the globally optimal sweep partition — not just a locally good one — at negligible additional cost ($O(n)$ extra iterations).
+
+### ⚛️ Dual Quantum Backend: Simulation Fidelity + Hardware Readiness
+We developed and maintain **two independent quantum implementations** of the TSP solver, each suited to a different deployment context. SamplingVQE's flexible ansatz converges efficiently on simulators; QAOA's fixed circuit structure maps cleanly onto real QPU gate sets. This dual strategy lets us produce real results today while remaining ready to run on actual quantum hardware.
+
+### 📐 NISQ-Aware Cluster Sizing
+Cluster sizes are deliberately kept at $n \leq 4$ customers, requiring at most $n^2 = 16$ qubits per sub-problem. This is not a limitation — it is a **conscious hardware-aware design choice** that ensures the quantum circuits remain feasible on current NISQ simulators and real hardware without error correction.
+
+### 🔗 Modular, Upgradeable Architecture
+Each component (clustering, QUBO mapping, quantum execution) is independently swappable. Switching between VQE and QAOA backends, increasing circuit depth, or scaling cluster sizes requires changes in a single module.
+
+---
+
+## 4. Phase 1 — Rotation-Optimized Sweep Clustering
+
+Customers are mapped to **polar coordinates** $(r, \theta)$ relative to the central depot at $(0, 0)$, then sorted by angle $\theta$. A sweep groups consecutive customers into clusters of size $\leq C$ (vehicle capacity).
+
+The innovation is in how the sweep's starting angle is chosen:
+
+```python
+for start_idx in range(n_nodes):                          # Try every starting angle
+    rotated_nodes = [nodes_angle[(start_idx + i) % n_nodes]
+                     for i in range(n_nodes)]
+    ...
+    spread = (angle_end - angle_start) % (2 * math.pi)   # Angular spread per cluster
+    current_angle_sum += spread
+
+if current_angle_sum < lowest_angle_sum:                  # Keep global minimum
+    best_clusters = current_clusters
+```
+
+By minimizing **total angular spread**, we ensure each vehicle operates in a geometrically compact, non-overlapping sector. A compact cluster produces a nearly planar distance matrix, which both VQE and QAOA optimize more effectively at low circuit depth — meaning our clustering directly improves quantum solution quality.
+
+---
+
+## 5. Phase 2 — Dual Quantum Backend Strategy
+
+A key engineering decision in this project was the choice of quantum algorithm for the TSP routing phase. We implemented and maintain **both SamplingVQE and QAOA**, for complementary reasons.
+
+### Why Two Algorithms?
+
+QAOA and VQE solve the same problem (finding the minimum energy of a cost Hamiltonian) but make fundamentally different trade-offs:
+
+| Property | QAOA | SamplingVQE |
+|----------|------|-------------|
+| Circuit structure | Fixed, problem-derived | Flexible (learnable ansatz) |
+| Simulation efficiency | Moderate — deep circuits | High — shallow, hardware-efficient ansatz |
+| Convergence on simulator | Slower, more sensitive to $p$ | Faster, more robust |
+| Real hardware suitability | Excellent — native gate structure | Good — requires ansatz transpilation |
+| Theoretical quantum advantage | Stronger theoretical grounding | More empirical |
+
+**In practice on classical simulators**, QAOA's deep, problem-specific circuits are slower to simulate and harder to converge than VQE's shallow parameterized ansatz. However, QAOA's fixed gate structure closely matches the native operations of real QPUs — ZZ-interaction layers map directly to the entangling gates of superconducting and trapped-ion hardware — making it the stronger candidate for actual quantum hardware execution.
+
+Our dual-backend design reflects this reality explicitly rather than hiding it behind a single algorithm choice.
+
+---
+
+### 5a. SamplingVQE — Primary Solver (Simulation)
+
+SamplingVQE is the backend used to produce our submitted results. It uses a **`RealAmplitudes` ansatz** — a hardware-efficient parameterized circuit with alternating rotation and entanglement layers — transpiled to the AerSimulator's native gate set before optimization.
+
+**Pipeline:**
+
+```
+Cluster distance matrix
+        │
+        ▼
+   Tsp (Qiskit)               → Quadratic Program
+        │
+        ▼
+MinimumEigenOptimizer          → Wraps SamplingVQE for QUBO solving
+        │
+        ▼
+RealAmplitudes(reps=2)         → Hardware-efficient parameterized ansatz
+        │
+        ▼
+transpile(ansatz, AerSimulator) → Compiled to native gate set
+        │
+        ▼
+AerSampler + COBYLA(maxiter=200) → Variational parameter training
+        │
+        ▼
+tsp.interpret(result)           → Optimal route
+```
+
+**Design choices:**
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Ansatz | `RealAmplitudes` | Hardware-efficient; shallow depth, full entanglement |
+| `reps` | 2 | Sufficient expressibility for $n \leq 4$ TSP instances |
+| Optimizer | COBYLA | Derivative-free; robust on noisy sampled landscapes |
+| `maxiter` | 200 | Generous convergence budget for the variational loop |
+| Backend | `AerSimulator` | High-fidelity local simulation via Qiskit Aer |
+
+---
+
+### 5b. QAOA — Real Hardware Implementation
+
+The QAOA implementation is maintained as the **path-to-hardware** backend. While SamplingVQE converges faster on simulators, QAOA's circuit structure is inherently aligned with the gate sets of real superconducting and trapped-ion QPUs.
+
+**Pipeline:**
+
+```
+Cluster distance matrix
+        │
+        ▼
+   Tsp (Qiskit)          → Quadratic Program
+        │
+        ▼
+QuadraticProgramToQubo   → QUBO formulation
+        │
+        ▼
+   to_ising()            → Pauli Hamiltonian (qubitOp)
+        │
+        ▼
+   QAOA (p=3 layers)     → Problem-derived quantum circuit
+        │
+        ▼
+StatevectorSampler        → High-fidelity sampling
++ COBYLA (maxiter=150, tol=1e-3)
+        │
+        ▼
+sample_most_likely()     → Most probable bitstring → Route
+```
+
+**Design choices:**
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| QAOA layers $p$ | 3 | $p=1$ rarely escapes local minima for TSP; $p=3$ improves approximation ratio |
+| Optimizer | COBYLA | Derivative-free; suitable for noisy circuit landscapes |
+| `maxiter` | 150 | Balanced convergence budget |
+| `tol` | 1e-3 | Prevents premature termination |
+| Sampler | `StatevectorSampler` | Exact statevector for high-fidelity simulation |
+
+**Switching to real hardware** requires only replacing `StatevectorSampler` with a hardware-backed sampler (e.g., a qBraid or IBM Runtime sampler) — the circuit structure and optimization loop remain unchanged.
+
+---
+
+## 6. Quantum Resource Analysis
+
+### Classical vs. Quantum Responsibility
+
+| Task | Method | Why |
+|------|--------|-----|
+| Capacity partitioning | Classical sweep | Trivially solved classically; no quantum advantage |
+| Route optimization within cluster | SamplingVQE / QAOA | Discrete combinatorial search — quantum advantage domain |
+| Parameter training | COBYLA (classical outer loop) | Handles variational parameter landscape classically |
+
+### Resource Efficiency by Design
+
+Solving the full CVRP directly on a quantum computer with $N$ customers would require $O(N^2)$ qubits for the QUBO encoding — quickly exceeding any current hardware budget. By decomposing into clusters of size $\leq 4$, we bound qubit usage at **16 qubits per sub-problem**, regardless of total problem size.
+
+| Cluster size $n$ | Qubits ($n^2$) | VQE gate depth | QAOA gate depth ($p=3$) |
+|-----------------|----------------|----------------|------------------------|
+| 2 | 4 | Very low | Low |
+| 3 | 9 | Low | Moderate |
+| 4 | 16 | Moderate | Manageable on NISQ |
+
+The quantum resource cost scales with **cluster size** (fixed by design at $\leq 4$), not with **total problem size** — a crucial distinction for practical NISQ deployment.
+
+---
+
+## 7. Results
+
+Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
+
+| Instance | Known Optimal | Our Solution | Approximation Ratio | Execution Time |
+|----------|--------------|--------------|---------------------|----------------|
+| 1 | 26.18 | _TBD_ | _TBD_ | ~0.007 s |
+| 2 | 26.18 | _TBD_ | _TBD_ | _TBD_ |
+| 3 | 43.27 | 48.46 | ~1.12 | ~11–34 s |
+| 4 | 61.85 *(heuristic)* | 54.26 | **< 1.00** ✓ | ~42–53 s |
+
+> **Approximation Ratio** = Our Solution / Known Optimal. Closer to 1.00 is better; below 1.00 means we outperform the reference.
+
+**Best routes found:**
+
+```
+# Instance 1
+r1: 0, 2, 3, 0
+r2: 0, 1, 4, 0
+
+# Instance 3
+r1: 0, 4, 6, 0
+r2: 0, 5, 3, 0
+r3: 0, 2, 1, 0
+
+# Instance 4
+r1: 0, 10, 9, 6, 0
+r2: 0, 2, 11, 12, 0
+r3: 0, 1, 8, 7, 0
+r4: 0, 4, 5, 3, 0
+```
+
+> Note: Instance 4's reference distance (61.85) is a heuristic bound, not a proven optimum. Our solution at 54.26 outperforms it.
+
+---
+
+## 8. Repository Structure
+
+```
+.
+├── main.py                        # Entry point — runs the full solver on a given instance
+├── requirements.txt               # Python dependencies
+├── utils/
+│   ├── vqe.py                     # SamplingVQE solver (primary — used for results)
+│   ├── qaoa.py                    # QAOA solver (real hardware path)
+│   ├── get_cluster.py             # Rotation-Optimized Sweep clustering algorithm
+│   ├── CVRPDataLoader.py          # Loads challenge instances (Sets 1–4)
+│   ├── get_distance_matrix.py     # Builds adjacency matrix from cluster nodes
+│   ├── save_crp_solutions.py      # Formats routes for hackathon submission
+│   ├── save_instance_results.py   # Records qubit count, gate count, execution time
+│   └── visualise.py               # Route and instance visualization
+├── data/
+│   ├── Instance1.txt              # Solution file — instance 1
+│   ├── Instance3.txt              # Solution file — instance 3
+│   ├── Instance4.txt              # Solution file — instance 4
+│   ├── data.csv                   # Quantum resource metrics per run
+│   └── optimal_results.csv        # Known optimal/heuristic solutions for benchmarking
+├── test/                          # Unit tests for all modules (pytest)
+│   ├── test_cvrp_dataloader.py
+│   ├── test_get_cluster.py
+│   ├── test_get_distance_matrix.py
+│   ├── test_qaoa.py
+│   ├── test_save_crp_solutions.py
+│   └── test_save_instance_results.py
+└── challenge/
+    ├── README.md                  # Original challenge description
+    └── qCourier-YaleHackathon-2026.ipynb
+```
+
+---
+
+## 9. Setup & Usage
+
+### Prerequisites
+
+```bash
+pip install -r requirements.txt
+```
+
+### Running the Solver (SamplingVQE — default)
+
+Set `INSTANCE_ID` in `main.py` (1–4), then:
+
+```bash
+python main.py
+```
+
+**Full example — solving Instance 3:**
+
+```python
+# In main.py:
+INSTANCE_ID = 3
+# Then:
+# python main.py
+#
+# Outputs written to data/:
+#   Instance3.txt  →  routes in hackathon format
+#   data.csv       →  execution time and distance appended
+```
+
+**Output format** (per hackathon spec):
+```
+r1: 0, 4, 6, 0
+r2: 0, 5, 3, 0
+r3: 0, 2, 1, 0
+```
+
+### Switching to QAOA (Real Hardware Path)
+
+To run the QAOA backend instead of VQE, replace the import in `main.py`:
+
+```python
+# Default (simulation):
+from utils.vqe import solve_tsp
+
+# Switch to QAOA (real hardware path):
+from utils.qaoa import solve_tsp
+```
+
+To target actual QPU hardware, replace `StatevectorSampler` in the QAOA module with a hardware-backed sampler from qBraid or IBM Runtime — no other changes required.
+
+### Running Tests
+
+```bash
+python -m pytest test/
+```
+
+---
+
+## 10. Scalability & Future Work
+
+Our architecture is explicitly designed to evolve alongside quantum hardware:
+
+| Hardware generation | Recommended backend | Supported upgrade |
+|---------------------|--------------------|--------------------|
+| Classical simulator (today) | SamplingVQE | Cluster size $n \leq 4$, `RealAmplitudes(reps=2)` |
+| NISQ hardware (near-term) | QAOA | Swap sampler to QPU backend — circuit unchanged |
+| Improved NISQ (2–3 years) | QAOA with larger $p$ | Increase $p$, grow cluster sizes to $n=5{-}6$ |
+| Fault-tolerant era | Full CVRP quantum solve | No decomposition needed, solve globally |
+
+The key insight: **geometric compactness of clusters directly correlates with quantum solution quality**. A compact cluster yields a near-planar distance matrix, which both VQE and QAOA optimize more effectively at low circuit depth. Our rotation-optimized sweep is engineered precisely to maximize this property — making the quantum phase as tractable as possible regardless of backend.
+
+---
+
+## 11. Development Team
+
+- [**Alexis Pouliot**](https://github.com/PouliotAlexis)
+- [**Amarey Farris Hajouji Idrissi Rios**](https://github.com/haja8956)
+- [**Gabriel Michaud**](https://github.com/GabMichaud)
+- [**Jasmin Pelletier**](https://github.com/Jas-pel)
+- [**Laurier Perron**](https://github.com/perl2548)
+
+---
+
+*Developed for the Yale Hackathon 2026 — RTX (RTRC) × QuantumCT × qBraid.*
