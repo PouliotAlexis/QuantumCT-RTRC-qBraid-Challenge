@@ -7,10 +7,10 @@ class CVRPDataLoader:
 
     def load_instance(self, instance_id: int) -> dict:
         """
-        Loads the specific CVRP instance based on the ID (1-4).
+        Loads the specific CVRP instance based on the ID (1-5).
 
         Args:
-            instance_id (int): The instance identifier (1 to 4).
+            instance_id (int): The instance identifier (1 to 5).
 
         Returns:
             dict: Data instance with 'id', 'm_vehicles', 'capacity', and 'nodes'.
@@ -23,10 +23,11 @@ class CVRPDataLoader:
             2: self._load_instance_2,
             3: self._load_instance_3,
             4: self._load_instance_4,
+            5: self._load_instance_5,
         }
         if instance_id in instances:
             return instances[instance_id]()
-        raise ValueError(f"Invalid instance ID {instance_id}. Must be between 1 and 4.")
+        raise ValueError(f"Invalid instance ID {instance_id}. Must be between 1 and 5.")
 
     def _load_instance_1(self) -> dict:
         return {
@@ -70,5 +71,26 @@ class CVRPDataLoader:
                 (2, 7),
                 (-2, 5),
                 (-1, 4),
+            ],
+        }
+
+    def _load_instance_5(self) -> dict:
+        return {
+            "id": 5,
+            "m_vehicles": 4,
+            "capacity": 3,
+            "nodes": [
+                (0, 5),
+                (-1, 2),
+                (1, 2),
+                (-2.5, 1),
+                (-1.5, 1),
+                (-2, 0.5),
+                (2.5, 1),
+                (1.5, 1),
+                (2, 0.5),
+                (0.5, -1),
+                (-0.5, -1),
+                (0, -1.5),
             ],
         }

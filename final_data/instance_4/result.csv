@@ -1,2 +1,0 @@
-Instance,# of Qubits,# of Gate Operations,Circuit Depth,Execution Time,Calculated Distance,Optimal Distance,Calculated Routes,Optimal Routes
-4,16,500,24,154.26,51.24,61.85,"r1: 0, 6, 10, 9, 0 | r2: 0, 12, 11, 0 | r3: 0, 7, 8, 1, 0 | r4: 0, 5, 3, 4, 0","r1: 0, 1, 6, 9, 0 | r2: 0, 10, 2, 11, 0 | r3: 0, 5, 3, 4, 0 | r4: 0, 12, 7, 8, 0"

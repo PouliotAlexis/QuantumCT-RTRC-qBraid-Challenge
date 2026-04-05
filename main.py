@@ -98,10 +98,13 @@ if __name__ == "__main__":
         sys.exit(1)
     
     arg = sys.argv[1]
-    if arg == "5":
+    if arg == "0":
         main(1, show_plot=False)
         main(2, show_plot=False)
         main(3, show_plot=False)
         main(4, show_plot=False)
+
+        # Supplement
+        main(5, show_plot=False)
     else:
         main(int(arg), show_plot=True)
