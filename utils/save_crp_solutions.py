@@ -21,10 +21,8 @@ def save_cvrp_solution(
 
     with open(filename, "w") as f:
         for i, route in enumerate(routes, start=1):
-            # Clean route to remove empty lists and flatten nested structures
-            cleaned_route = clean_route(route)
             # Convert list [0, 2, 3, 0] to string "0, 2, 3, 0"
-            route_str = ", ".join(map(str, cleaned_route))
+            route_str = ", ".join(map(str, route))
             # Write line in format r1: 0, ...
             f.write(f"r{i}: {route_str}\n")
 

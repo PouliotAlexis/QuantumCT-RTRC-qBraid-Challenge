@@ -6,12 +6,12 @@ from qiskit_optimization.applications import Tsp
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
 
-def qaoa_adaptation(adjacency_matrix: np.ndarray, p: int = 3):
+def qaoa_adaptation(distance_matrix: np.ndarray, p: int = 3):
     """
     Solves the Traveling Salesman Problem (TSP) for a given sector using QAOA with COBYLA optimizer.
 
     Args:
-        adjacency_matrix (np.ndarray): The distance/cost matrix for TSP.
+        distance_matrix (np.ndarray): The distance/cost matrix for TSP.
         p (int): The number of QAOA layers (default: 1).
 
     Returns:
@@ -19,7 +19,7 @@ def qaoa_adaptation(adjacency_matrix: np.ndarray, p: int = 3):
             - optimal_route: The best route found (list of node indices).
             - eigenvalue: The energy value associated with the route.
     """
-    tsp = Tsp(adjacency_matrix)
+    tsp = Tsp(distance_matrix)
     qp = tsp.to_quadratic_program()
 
     # 2. Conversion en QUBO
