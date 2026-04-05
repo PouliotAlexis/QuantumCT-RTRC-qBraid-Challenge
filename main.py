@@ -1,13 +1,11 @@
 from time import time
 
-from tsp import solve_tsp
 from utils.CVRPDataLoader import CVRPDataLoader
 from utils.get_cluster import get_cluster_with_optimised_sweep
-from utils.get_distance_matrix import (get_distance_matrix_with_ids,
-                                       remap_route_indices)
-from utils.qaoa import qaoa_adaptation
+from utils.get_distance_matrix import get_distance_matrix_with_ids, remap_route_indices
 from utils.save_crp_solutions import save_cvrp_solution
 from utils.save_instance_results import save_instance_results
+from utils.vqe import solve_tsp
 
 
 def main(instance_id: int) -> None:
@@ -60,5 +58,7 @@ def main(instance_id: int) -> None:
 
 
 if __name__ == "__main__":
-    INSTANCE_ID = 3  # Between 1 and 4
-    main(INSTANCE_ID)    main(INSTANCE_ID)
+    INSTANCE_ID = 4  # Between 1 and 4
+    main(INSTANCE_ID)
+    main(INSTANCE_ID)
+    main(INSTANCE_ID)

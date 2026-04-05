@@ -54,4 +54,14 @@ def remap_route_indices(route: list[int], node_ids: list[int]) -> list[int]:
     Returns:
         list[int]: Route with actual node IDs
     """
-    return [node_ids[idx] for idx in route]
+    try:
+        return [node_ids[int(idx)] for idx in route]
+    except (TypeError, ValueError) as e:
+        # Handle case where route might have nested structure
+        flat_route = []
+        for item in route:
+            if isinstance(item, (list, tuple)):
+                flat_route.extend(item)
+            else:
+                flat_route.append(item)
+        return [node_ids[int(idx)] for idx in flat_route]

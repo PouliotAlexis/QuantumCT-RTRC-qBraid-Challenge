@@ -46,4 +46,14 @@ def solve_tsp(distance_matrix: np.ndarray):
     optimizer_quantique = MinimumEigenOptimizer(vqe)
     resultat = optimizer_quantique.solve(quadratic_program)
 
-    return tsp_app.interpret(resultat)
+    # Extract the solution and convert to list of node indices
+    solution = tsp_app.interpret(resultat)
+
+    # Handle numpy array or other iterable types
+    if hasattr(solution, "tolist"):
+        return solution.tolist()
+    elif isinstance(solution, (list, tuple)):
+        return list(solution)
+    else:
+        # If it's something else, try to convert it
+        return list(solution)

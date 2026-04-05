@@ -13,3 +13,5 @@ CVRP Instance #,# of Qubits,# of Gate Operations,Execution Time
 3,0,0,14.2518
 3,0,0,13.0121
 3,0,0,14.3312
+3,0,0,11.7987
+4,0,0,42.0443
