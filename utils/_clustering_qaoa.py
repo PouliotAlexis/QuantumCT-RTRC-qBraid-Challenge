@@ -1,23 +1,28 @@
 import numpy as np
+from qiskit import transpile
 from qiskit.primitives import StatevectorSampler
+from qiskit.circuit.library import QAOAAnsatz
+from qiskit_aer import AerSimulator
 from qiskit_algorithms import QAOA
 from qiskit_algorithms.optimizers import COBYLA  # L'optimiseur classique
 from qiskit_optimization.applications import Tsp
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
 
-def solve_tsp(distance_matrix: np.ndarray, p: int = 3):
+def solve_tsp_with_qaoa(distance_matrix: np.ndarray, p: int = 3) -> tuple[list[int], int, int, int]:
     """
     Solves the Traveling Salesman Problem (TSP) for a given sector using QAOA with COBYLA optimizer.
 
     Args:
         distance_matrix (np.ndarray): The distance/cost matrix for TSP.
-        p (int): The number of QAOA layers (default: 1).
+        p (int): The number of QAOA layers (default: 3).
 
     Returns:
         tuple: A tuple containing:
             - optimal_route: The best route found (list of node indices).
-            - eigenvalue: The energy value associated with the route.
+            - num_qubits: Total qubits used in the QAOA mapping.
+            - num_gates: Total gate operations.
+            - depth: Circuit depth.
     """
     tsp = Tsp(distance_matrix)
     qp = tsp.to_quadratic_program()
@@ -50,7 +55,15 @@ def solve_tsp(distance_matrix: np.ndarray, p: int = 3):
     # interpret convertit ces bits en liste de villes [0, 1, 2]
     optimal_route = tsp.interpret(most_likely_bitstring)
 
+    # Calcul des métriques avec le circuit QAOA explicit
+    ansatz = QAOAAnsatz(cost_operator=qubitOp, reps=p)
+    backend = AerSimulator()
+    ansatz_transpiled = transpile(ansatz, backend=backend)
+    n_gates = ansatz_transpiled.size()
+    depth = ansatz_transpiled.depth()
+
     # Calcul de la distance réelle
     total_distance = result.eigenvalue + offset
 
-    return optimal_route
+    # On retourne la route optimale et les métriques
+    return optimal_route, qubitOp.num_qubits, n_gates, depth
