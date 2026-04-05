@@ -38,10 +38,10 @@ Quantum algorithms offer a fundamentally different search strategy over the comb
 We employ a **"Cluster-First, Route-Second"** decomposition strategy — a principled divide-and-conquer approach that breaks the global CVRP into a series of small Traveling Salesman Problems (TSPs), each solvable by a quantum circuit.
 
 ```mermaid
-flowchart TD
-    A["CVRP Instance<br/>(custom or Sets 1-4)"]
-    B["Phase 1 — Classical<br/>Optimized Sweep<br/>capacity-aware<br/>clustering"]
-    C["Phase 2 — Quantum<br/>Routing"]
+graph TD
+    A["CVRP Instance - Sets 1-4"]
+    B["Phase 1 - Classical Optimized Sweep"]
+    C["Phase 2 - Quantum Routing"]
     D["SamplingVQE"]
     E["QAOA"]
     F["CVRP Solution"]
@@ -125,8 +125,8 @@ SamplingVQE is the backend used to produce our submitted results. It uses a **`R
 **Pipeline:**
 
 ```mermaid
-flowchart LR
-    A["Distance<br/>matrix"] --> B["TSP<br/>formulation"] --> C["Eigen<br/>Optimizer"] --> D["RealAmplitudes<br/>reps=3"] --> E["Transpile<br/>to Aer"] --> F["Variational<br/>optimization"] --> G["Optimal<br/>route"]
+graph LR
+    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Eigen Optimizer"] --> D["RealAmplitudes"] --> E["Transpile to Aer"] --> F["Variational Optimization"] --> G["Optimal Route"]
 ```
 
 
@@ -150,8 +150,8 @@ The QAOA implementation is maintained as the **path-to-hardware** backend. While
 **Pipeline:**
 
 ```mermaid
-flowchart LR
-    A["Distance<br/>matrix"] --> B["TSP<br/>formulation"] --> C["Quadratic<br/>Program"] --> D["QUBO<br/>conversion"] --> E["Ising<br/>Hamiltonian"] --> F["QAOA"] --> G["Variational<br/>optimization"] --> H["Optimal<br/>route"]
+graph LR
+    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Quadratic Program"] --> D["QUBO Conversion"] --> E["Ising Hamiltonian"] --> F["QAOA"] --> G["Variational Optimization"] --> H["Optimal Route"]
 ```
 
 
