@@ -32,7 +32,7 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int
 
     # 2. Create Ansatz
     num_qubits = quadratic_program.get_num_vars()
-    ansatz = RealAmplitudes(num_qubits=num_qubits, reps=2)
+    ansatz = RealAmplitudes(num_qubits=num_qubits, reps=3)
 
     # 3. Transpilation (CRITICAL for performance)
     ansatz_transpiled = transpile(ansatz, backend=backend)
@@ -42,7 +42,7 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int
     vqe = SamplingVQE(
         sampler=sampler, 
         ansatz=ansatz_transpiled, 
-        optimizer=COBYLA(maxiter=200)
+        optimizer=COBYLA(maxiter=500)
     )
 
     # 5. Solve using Minimum Eigen Optimizer
