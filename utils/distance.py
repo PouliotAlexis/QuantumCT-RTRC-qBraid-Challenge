@@ -1,37 +1,37 @@
 import numpy as np
 
 
-def compute_distance_matrix(nodes: dict[int, tuple[float, float]]) -> np.ndarray:
+def compute_distance_matrix(nodes: dict[int, tuple[float, ...]]) -> np.ndarray:
     """
-    Computes the Euclidean distance matrix for a set of nodes.
+    Computes the Euclidean distance matrix for a set of nodes in N-dimensional space.
 
     Args:
-        nodes (dict): A dictionary {id: (x, y)} representing the nodes.
+        nodes (dict): A dictionary {id: (coord1, coord2, ...)} representing the nodes.
 
     Returns:
         ndarray: A NumPy distance matrix of shape (n, n) where element [i, j] 
                  is the Euclidean distance between node i and node j.
     """
-    # Convert coordinates to NumPy array (n, 2)
+    # Convert coordinates to NumPy array (n, D)
     coords = np.array(list(nodes.values()))
 
-    # Calculate the difference between each pair of points (n, n, 2)
+    # Calculate the difference between each pair of points (n, n, D)
     diff = coords[:, np.newaxis, :] - coords[np.newaxis, :, :]
 
-    # Calculate the Euclidean norm on the last axis
-    dist_matrix = np.linalg.norm(diff, axis=2)
+    # Calculate the Euclidean norm on the last axis (dimension axis)
+    dist_matrix = np.linalg.norm(diff, axis=-1)
 
     return dist_matrix
 
 
 def compute_distance_matrix_with_mapping(
-    nodes: dict[int, tuple[float, float]],
+    nodes: dict[int, tuple[float, ...]],
 ) -> tuple[np.ndarray, list[int]]:
     """
     Computes Euclidean distance matrix and returns index-to-node ID mapping.
 
     Args:
-        nodes (dict): A dictionary {id: (x, y)} representing the nodes.
+        nodes (dict): A dictionary {id: (coord1, coord2, ...)} representing the nodes.
 
     Returns:
         tuple: (distance_matrix, node_ids_list) where:

@@ -5,30 +5,40 @@ from typing import Union
 import numpy as np
 
 
+def map_indices_to_node_ids(route_indices: list[int], node_ids: list[int]) -> list[int]:
+    """
+    Maps internal route indices to actual node IDs.
+    """
+    return [node_ids[idx] for idx in route_indices]
+
+
 def calculate_total_distance(all_routes: list[list[int]], nodes: list) -> float:
     """
-    Calculates the total Euclidean distance of all vehicle routes.
+    Calculates the total Euclidean distance of all vehicle routes for N-dimensional coordinates.
 
     Args:
         all_routes (list[list[int]]): Node IDs for each route (0 is depot).
-        nodes (list): Coordinates for each node [(x, y), ...].
+        nodes (list): Coordinates for each node [ (c1, c2, ...), ...].
 
     Returns:
         float: Total Euclidean distance.
     """
     total_distance = 0.0
-    depot = (0, 0)
+    
+    # Determine dimension from the first node if available, default to 2
+    num_dim = len(nodes[0]) if nodes else 2
+    depot = np.zeros(num_dim)
 
     for route in all_routes:
         for i in range(len(route) - 1):
             n1_id, n2_id = route[i], route[i + 1]
 
-            coord1 = depot if n1_id == 0 else nodes[n1_id - 1]
-            coord2 = depot if n2_id == 0 else nodes[n2_id - 1]
+            # Convert to numpy arrays for vector subtraction
+            coord1 = depot if n1_id == 0 else np.array(nodes[n1_id - 1])
+            coord2 = depot if n2_id == 0 else np.array(nodes[n2_id - 1])
 
-            x1, y1 = coord1
-            x2, y2 = coord2
-            total_distance += np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            # Euclidean distance = norm of the difference vector
+            total_distance += np.linalg.norm(coord2 - coord1)
 
     return total_distance
 
