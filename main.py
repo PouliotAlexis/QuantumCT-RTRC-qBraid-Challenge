@@ -10,7 +10,7 @@ from utils.tsp_solver import solve_tsp_with_vqe
 from utils.visualization import plot_solution
 
 
-def main(instance_id: int) -> None:
+def main(instance_id: int, show_plot: bool = True) -> None:
     """
     Runs a Capacitated Vehicle Routing Problem (CVRP) quantum solver instance.
     Executes the quantum circuit and saves results in the official hackathon format.
@@ -30,6 +30,7 @@ def main(instance_id: int) -> None:
 
     nb_total_gate = 0
     max_nb_qubits = 0
+    max_depth = 0
     all_routes: list[list[int]] = []
 
     start_time = time()
@@ -40,7 +41,15 @@ def main(instance_id: int) -> None:
     # 2. Solve TSP for each cluster using VQE
     for cluster in clusters:
         distance_matrix, node_ids = compute_distance_matrix_with_mapping(cluster)
-        route_indices: list[int] = solve_tsp_with_vqe(distance_matrix)
+        route_indices, nq, ng, dp = solve_tsp_with_vqe(distance_matrix)
+        
+        # Track maximum qubits used across all clusters
+        max_nb_qubits = max(max_nb_qubits, nq)
+        # Track total gate operations across all clusters
+        nb_total_gate += ng
+        # Track maximum circuit depth across all clusters
+        max_depth = max(max_depth, dp)
+        
         route: list[int] = map_indices_to_node_ids(route_indices, node_ids)
         all_routes.append(route)
 
@@ -69,6 +78,7 @@ def main(instance_id: int) -> None:
         instance_id,
         max_nb_qubits,
         nb_total_gate,
+        max_depth,
         time() - start_time,
         "data/run_results.csv",
         total_distance,
@@ -77,7 +87,8 @@ def main(instance_id: int) -> None:
     )
 
     # 6. Visualize the final routes
-    plot_solution(data_instance, all_routes)
+    if show_plot:
+        plot_solution(data_instance, all_routes)
     print(f"Final Routes: {all_routes}")
 
 
@@ -85,4 +96,12 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python main.py <instance_id>")
         sys.exit(1)
-    main(int(sys.argv[1]))
+    
+    arg = sys.argv[1]
+    if arg == "5":
+        main(1, show_plot=False)
+        main(2, show_plot=False)
+        main(3, show_plot=False)
+        main(4, show_plot=False)
+    else:
+        main(int(arg), show_plot=True)

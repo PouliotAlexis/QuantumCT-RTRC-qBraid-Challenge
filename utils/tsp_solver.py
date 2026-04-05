@@ -9,7 +9,7 @@ from qiskit_optimization.algorithms import MinimumEigenOptimizer
 from qiskit_optimization.applications import Tsp
 
 
-def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> list[int]:
+def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int, int]:
     """
     Solves the Traveling Salesman Problem (TSP) using a Quantum VQE algorithm.
 
@@ -17,7 +17,11 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> list[int]:
         distance_matrix (np.ndarray): The matrix of Euclidean distances between nodes.
 
     Returns:
-        list[int]: The optimal order of node indices found by the quantum solver.
+        tuple: (route, num_qubits, num_gates, depth)
+            - route (list[int]): The optimal order of node indices.
+            - num_qubits (int): Total qubits in the transpiled circuit.
+            - num_gates (int): Total gate operations in the transpiled circuit.
+            - depth (int): Total depth of the transpiled circuit.
     """
     # Initialize TSP application and convert to Quadratic Program
     tsp_app = Tsp(distance_matrix)
@@ -48,7 +52,12 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> list[int]:
     # 6. Interpret results to node indices
     solution = tsp_app.interpret(result)
 
+    # Extract metrics from the transpiled circuit
+    n_qubits = ansatz_transpiled.num_qubits
+    n_gates = ansatz_transpiled.size()
+    depth = ansatz_transpiled.depth()
+
     # Handle various return types from interpret
     if hasattr(solution, "tolist"):
-        return solution.tolist()
-    return list(solution)
+        return solution.tolist(), n_qubits, n_gates, depth
+    return list(solution), n_qubits, n_gates, depth

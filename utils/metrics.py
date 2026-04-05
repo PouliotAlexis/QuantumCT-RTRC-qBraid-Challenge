@@ -62,6 +62,7 @@ def log_metrics_to_csv(
     instance_id: Union[int, str],
     nb_qubits: int,
     nb_gates: int,
+    circuit_depth: int,
     exec_time: float,
     file_path: str,
     total_distance: float = 0.0,
@@ -75,6 +76,7 @@ def log_metrics_to_csv(
         instance_id: ID of the problem (1-4).
         nb_qubits: Number of qubits in the circuit.
         nb_gates: Number of gates executed.
+        circuit_depth: Depth of the circuit.
         exec_time: Runtime in seconds.
         file_path: Target CSV path.
         total_distance: Total distance calculated from routes.
@@ -94,6 +96,7 @@ def log_metrics_to_csv(
         "Instance",
         "# of Qubits",
         "# of Gate Operations",
+        "Circuit Depth",
         "Execution Time",
         "Calculated Distance",
         "Optimal Distance",
@@ -108,6 +111,7 @@ def log_metrics_to_csv(
         instance_id,
         nb_qubits,
         nb_gates,
+        circuit_depth,
         f"{exec_time:.4f}",
         f"{total_distance:.4f}",
         f"{opt_distance}",
