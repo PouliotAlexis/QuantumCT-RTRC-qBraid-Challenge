@@ -102,6 +102,18 @@ def visualize_solution(instance: dict, all_routes: list):
     plt.title(
         f"Solution CVRP - Instance {instance['id']}\nRoutes optimisées par VQE", pad=20
     )
-    plt.legend(loc="upper right", bbox_to_anchor=(1.2, 1))
+
+    # MODIFICATION ICI : On place la légende en bas pour ne rien couper
+    plt.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=3,
+        fancybox=True,
+        shadow=True,
+    )
+
     plt.axis("equal")
+
+    # TRÈS IMPORTANT : Ajuste le layout pour que la légende soit visible
+    plt.tight_layout()
     plt.show()

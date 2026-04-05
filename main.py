@@ -22,7 +22,8 @@ def main(instance_id: int) -> None:
     """
     loader = CVRPDataLoader()
     data_instance: dict = loader.get_instance(instance_id)
-    plot_instance(data_instance)
+
+    # plot_instance(data_instance)
 
     nb_total_gate = 0
     max_nb_qubits = 0
@@ -38,10 +39,8 @@ def main(instance_id: int) -> None:
         route: list[int] = remap_route_indices(route_indices, node_ids)
         all_routes.append(route)
 
-    # Rajouter + 1 a tous les routes
+    # Modify routes in correct format
     all_routes = [[node_id + 1 for node_id in route] for route in all_routes]
-
-    # Mettre le 0 en premier en slicant
     all_routes = [r[r.index(0) :] + r[: r.index(0)] + [0] for r in all_routes]
 
     # Calculate total Euclidean distance
@@ -64,10 +63,11 @@ def main(instance_id: int) -> None:
         total_distance,
     )
 
+    # Commented out to avoid tkinter threading issues
     visualize_solution(data_instance, all_routes)
     print(all_routes)
 
 
 if __name__ == "__main__":
-    INSTANCE_ID = 4  # Between 1 and 4
+    INSTANCE_ID = 3  # Between 1 and 4
     main(INSTANCE_ID)

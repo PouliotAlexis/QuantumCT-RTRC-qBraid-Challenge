@@ -11,27 +11,28 @@ def get_total_distance(all_routes: list[list[int]], nodes: list) -> float:
 
     Args:
         all_routes (list[list[int]]): List of routes, each route is a list of node IDs (1-based, where 0 is depot).
-        nodes (list): List of node coordinates [(x, y), ...] where index 0 is the depot.
+        nodes (list): List of node coordinates [(x, y), ...] where index 0 is the first customer node.
 
     Returns:
         float: Total Euclidean distance across all routes.
     """
     total_distance = 0.0
+    depot = (0, 0)  # Depot is always at origin
 
     for route in all_routes:
         for i in range(len(route) - 1):
             node1_id = route[i]
             node2_id = route[i + 1]
 
-            # Convert to 0-based index (node_id 1 -> index 0, node_id 0 -> index 0 (depot))
-            idx1 = 0 if node1_id == 0 else node1_id - 1
-            idx2 = 0 if node2_id == 0 else node2_id - 1
+            # Get coordinates for each node
+            # node_id 0 = depot, node_id 1+ = customers in nodes list
+            coord1 = depot if node1_id == 0 else nodes[node1_id - 1]
+            coord2 = depot if node2_id == 0 else nodes[node2_id - 1]
 
-            if 0 <= idx1 < len(nodes) and 0 <= idx2 < len(nodes):
-                x1, y1 = nodes[idx1]
-                x2, y2 = nodes[idx2]
-                distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                total_distance += distance
+            x1, y1 = coord1
+            x2, y2 = coord2
+            distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            total_distance += distance
 
     return total_distance
 
@@ -83,5 +84,4 @@ def save_instance_results(
 
         writer.writerow(row)
 
-    print(f"✅ Instance {instance_id} metrics saved to {file_path}")
     print(f"✅ Instance {instance_id} metrics saved to {file_path}")
