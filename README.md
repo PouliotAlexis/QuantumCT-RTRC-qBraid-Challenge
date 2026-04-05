@@ -125,16 +125,8 @@ SamplingVQE is the backend used to produce our submitted results. It uses a **`R
 **Pipeline:**
 
 ```mermaid
-%%{init: {"flowchart": {"rankSpacing": 25}} }%%
 flowchart LR
-    A["Distance
-matrix"] --> B["TSP
-formulation"] --> C["Eigen
-Optimizer"] --> D["RealAmplitudes
-reps=2"] --> E["Transpile
-to Aer"] --> F["Variational
-optimization"] --> G["Optimal
-route"]
+    A["Distance<br/>matrix"] --> B["TSP<br/>formulation"] --> C["Eigen<br/>Optimizer"] --> D["RealAmplitudes<br/>reps=3"] --> E["Transpile<br/>to Aer"] --> F["Variational<br/>optimization"] --> G["Optimal<br/>route"]
 ```
 
 
@@ -158,16 +150,8 @@ The QAOA implementation is maintained as the **path-to-hardware** backend. While
 **Pipeline:**
 
 ```mermaid
-%%{init: {"flowchart": {"rankSpacing": 25}} }%%
 flowchart LR
-    A["Distance
-matrix"] --> B["TSP
-formulation"] --> C["Quadratic
-Program"] --> D["QUBO
-conversion"] --> E["Ising
-Hamiltonian"] --> F["QAOA"] --> G["Variational
-optimization"] --> H["Optimal
-route"]
+    A["Distance<br/>matrix"] --> B["TSP<br/>formulation"] --> C["Quadratic<br/>Program"] --> D["QUBO<br/>conversion"] --> E["Ising<br/>Hamiltonian"] --> F["QAOA"] --> G["Variational<br/>optimization"] --> H["Optimal<br/>route"]
 ```
 
 
