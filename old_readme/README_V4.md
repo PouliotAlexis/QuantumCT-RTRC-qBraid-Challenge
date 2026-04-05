@@ -37,21 +37,37 @@ Quantum algorithms offer a fundamentally different search strategy over the comb
 
 We employ a **"Cluster-First, Route-Second"** decomposition strategy — a principled divide-and-conquer approach that breaks the global CVRP into a series of small Traveling Salesman Problems (TSPs), each solvable by a quantum circuit.
 
-```mermaid
-flowchart TD
-    A["CVRP Instance<br/>(custom or Sets 1-4)"]
-    B["Phase 1 — Classical<br/>Optimized Sweep<br/>capacity-aware<br/>clustering"]
-    C["Phase 2 — Quantum<br/>Routing"]
-    D["SamplingVQE"]
-    E["QAOA"]
-    F["CVRP Solution"]
-
-    A --> B
-    B -->|"One TSP per cluster"| C
-    C --> D
-    C --> E
-    D --> F
-    E --> F
+```
+┌─────────────────────────────────────────────────────┐
+│                   CVRP Instance                     │
+│            (customers + depot + capacity)           │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│         Phase 1 — Classical Clustering              │
+│      Rotation-Optimized Sweep Algorithm             │
+│   → Partitions customers into compact sectors       │
+│   → Each sector ≤ vehicle capacity (n ≤ 4 nodes)    │
+└────────────────────┬────────────────────────────────┘
+                     │  One TSP sub-problem per cluster
+                     ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                Phase 2 — Quantum Routing                         │
+│                                                                  │
+│   ┌─────────────────────────┐   ┌──────────────────────────────┐ │
+│   │  SamplingVQE (primary)  │   │  QAOA (real hardware path)   │ │
+│   │  RealAmplitudes ansatz  │   │  Fixed-structure circuit     │ │
+│   │  AerSimulator backend   │   │  StatevectorSampler          │ │
+│   │  → Used for results     │   │  → Ready for QPU deployment  │ │
+│   └─────────────────────────┘   └──────────────────────────────┘ │
+└────────────────────┬─────────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│            Full CVRP Solution                       │
+│     Merged routes in hackathon submission format    │
+└─────────────────────────────────────────────────────┘
 ```
 
 This hybrid design is **intentional**: classical computers excel at geometric partitioning; quantum computers offer a search advantage on discrete combinatorial optimization. We let each do what it does best — and we provide two quantum backends, each optimized for a different execution context.
@@ -124,20 +140,27 @@ SamplingVQE is the backend used to produce our submitted results. It uses a **`R
 
 **Pipeline:**
 
-```mermaid
-%%{init: {"flowchart": {"rankSpacing": 25}} }%%
-flowchart LR
-    A["Distance
-matrix"] --> B["TSP
-formulation"] --> C["Eigen
-Optimizer"] --> D["RealAmplitudes
-reps=2"] --> E["Transpile
-to Aer"] --> F["Variational
-optimization"] --> G["Optimal
-route"]
 ```
-
-
+Cluster distance matrix
+        │
+        ▼
+   Tsp (Qiskit)               → Quadratic Program
+        │
+        ▼
+MinimumEigenOptimizer          → Wraps SamplingVQE for QUBO solving
+        │
+        ▼
+RealAmplitudes(reps=2)         → Hardware-efficient parameterized ansatz
+        │
+        ▼
+transpile(ansatz, AerSimulator) → Compiled to native gate set
+        │
+        ▼
+AerSampler + COBYLA(maxiter=200) → Variational parameter training
+        │
+        ▼
+tsp.interpret(result)           → Optimal route
+```
 
 **Design choices:**
 
@@ -157,42 +180,38 @@ The QAOA implementation is maintained as the **path-to-hardware** backend. While
 
 **Pipeline:**
 
-```mermaid
-%%{init: {"flowchart": {"rankSpacing": 25}} }%%
-flowchart LR
-    A["Distance
-matrix"] --> B["TSP
-formulation"] --> C["Quadratic
-Program"] --> D["QUBO
-conversion"] --> E["Ising
-Hamiltonian"] --> F["QAOA"] --> G["Variational
-optimization"] --> H["Optimal
-route"]
 ```
-
-
+Cluster distance matrix
+        │
+        ▼
+   Tsp (Qiskit)          → Quadratic Program
+        │
+        ▼
+QuadraticProgramToQubo   → QUBO formulation
+        │
+        ▼
+   to_ising()            → Pauli Hamiltonian (qubitOp)
+        │
+        ▼
+   QAOA (p=3 layers)     → Problem-derived quantum circuit
+        │
+        ▼
+StatevectorSampler        → High-fidelity sampling
++ COBYLA (maxiter=150, tol=1e-3)
+        │
+        ▼
+sample_most_likely()     → Most probable bitstring → Route
+```
 
 **Design choices:**
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| QAOA layers $p$ | Tunable | See discussion below |
+| QAOA layers $p$ | 3 | $p=1$ rarely escapes local minima for TSP; $p=3$ improves approximation ratio |
 | Optimizer | COBYLA | Derivative-free; suitable for noisy circuit landscapes |
 | `maxiter` | 150 | Balanced convergence budget |
 | `tol` | 1e-3 | Prevents premature termination |
 | Sampler | `StatevectorSampler` | Exact statevector for high-fidelity simulation |
-
-### The Depth–Noise Tradeoff
-
-The number of QAOA layers $p$ is the most critical hyperparameter. Theoretically, **as $p \to \infty$, QAOA converges to the exact optimal solution** — the algorithm becomes equivalent to adiabatic quantum computation. In practice, however, increasing $p$ means deeper circuits with more gate operations, which makes the computation **exponentially more sensitive to hardware noise** (decoherence, gate errors).
-
-This creates a fundamental tradeoff:
-
-- **Low $p$** (e.g., $p=1$): Short circuits, noise-resilient, but the approximation ratio is poor — the optimizer often gets trapped in local minima.
-- **Moderate $p$** (e.g., $p=3{-}5$): Better approximation quality while keeping circuit depth manageable on NISQ devices. This is our current operating regime.
-- **High $p$** (e.g., $p > 10$): Near-optimal solutions in theory, but on real hardware the accumulated noise degrades results faster than the deeper circuit improves them.
-
-Our architecture makes $p$ a simple configurable parameter, allowing us to increase depth as hardware noise floors improve.
 
 **Switching to real hardware** requires only replacing `StatevectorSampler` with a hardware-backed sampler (e.g., a qBraid or IBM Runtime sampler) — the circuit structure and optimization loop remain unchanged.
 
@@ -237,7 +256,7 @@ Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
 
 **Best routes found:**
 
-```text
+```
 # Instance 1
 r1: 0, 2, 3, 0
 r2: 0, 1, 4, 0
@@ -260,7 +279,7 @@ r4: 0, 4, 5, 3, 0
 
 ## 8. Repository Structure
 
-```text
+```
 .
 ├── main.py                        # Entry point — runs the full solver on a given instance
 ├── requirements.txt               # Python dependencies
@@ -323,7 +342,7 @@ INSTANCE_ID = 3
 ```
 
 **Output format** (per hackathon spec):
-```text
+```
 r1: 0, 4, 6, 0
 r2: 0, 5, 3, 0
 r3: 0, 2, 1, 0
@@ -342,6 +361,12 @@ from utils.qaoa import solve_tsp
 ```
 
 To target actual QPU hardware, replace `StatevectorSampler` in the QAOA module with a hardware-backed sampler from qBraid or IBM Runtime — no other changes required.
+
+### Running Tests
+
+```bash
+python -m pytest test/
+```
 
 ---
 
