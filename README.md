@@ -65,16 +65,16 @@ This hybrid design is **intentional**: classical computers excel at geometric pa
 
 ## 3. Key Innovations
 
-### 🔄 Novel: Rotation-Optimized Sweep
+### Novel: Rotation-Optimized Sweep
 Standard sweep algorithms use a fixed starting angle, which can produce suboptimal cluster boundaries by accident of geometry. Our implementation **exhaustively searches all possible starting angles** and selects the partition that minimizes total angular spread across all clusters. This guarantees the globally optimal sweep partition — not just a locally good one — at negligible additional cost ($O(n)$ extra iterations).
 
-### ⚛️ Dual Quantum Backend: Simulation Fidelity + Hardware Readiness
+### Dual Quantum Backend: Simulation Fidelity + Hardware Readiness
 We developed and maintain **two independent quantum implementations** of the TSP solver, each suited to a different deployment context. SamplingVQE's flexible ansatz converges efficiently on simulators; QAOA's fixed circuit structure maps cleanly onto real QPU gate sets. This dual strategy lets us produce real results today while remaining ready to run on actual quantum hardware.
 
-### 📐 NISQ-Aware Cluster Sizing
+### NISQ-Aware Cluster Sizing
 Cluster sizes are deliberately kept at $n \leq 4$ customers, requiring at most $n^2 = 16$ qubits per sub-problem. This is not a limitation — it is a **conscious hardware-aware design choice** that ensures the quantum circuits remain feasible on current NISQ simulators and real hardware without error correction.
 
-### 🔗 Modular, Upgradeable Architecture
+### Modular, Upgradeable Architecture
 Each component (clustering, QUBO mapping, quantum execution) is independently swappable. Switching between VQE and QAOA backends, increasing circuit depth, or scaling cluster sizes requires changes in a single module.
 
 ---
@@ -222,6 +222,14 @@ Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
 | 4 | 61.85 *(heuristic)*| **51.24** | **0.83** ✓ | ~154.3 s |
 
 > **Approximation Ratio** = Our Solution / Known Optimal. Closer to 1.00 is better; below 1.00 means we outperform the reference.
+
+### Visualizations
+
+| Instance 1 | Instance 2 |
+|:---:|:---:|
+| ![Instance 1](final_data/instance_1/image.png) | ![Instance 2](final_data/instance_2/image.png) |
+| **Instance 3** | **Instance 4** |
+| ![Instance 3](final_data/instance_3/image.png) | ![Instance 4](final_data/instance_4/image.png) |
 
 **Best routes found:**
 
