@@ -4,7 +4,7 @@ from qiskit.circuit.library import RealAmplitudes
 from qiskit_aer import AerSimulator
 from qiskit_aer.primitives import SamplerV2 as AerSampler
 from qiskit_algorithms import SamplingVQE
-from qiskit_algorithms.optimizers import COBYLA
+from qiskit_algorithms.optimizers import SPSA   
 from qiskit_optimization.algorithms import MinimumEigenOptimizer
 from qiskit_optimization.applications import Tsp
 
@@ -32,7 +32,7 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int
 
     # 2. Create Ansatz
     num_qubits = quadratic_program.get_num_vars()
-    ansatz = RealAmplitudes(num_qubits=num_qubits, reps=3)
+    ansatz = RealAmplitudes(num_qubits=num_qubits, reps=2)
 
     # 3. Transpilation (CRITICAL for performance)
     ansatz_transpiled = transpile(ansatz, backend=backend)
@@ -42,7 +42,7 @@ def solve_tsp_with_vqe(distance_matrix: np.ndarray) -> tuple[list[int], int, int
     vqe = SamplingVQE(
         sampler=sampler, 
         ansatz=ansatz_transpiled, 
-        optimizer=COBYLA(maxiter=1500)
+        optimizer=SPSA(maxiter=1200)
     )
 
     # 5. Solve using Minimum Eigen Optimizer

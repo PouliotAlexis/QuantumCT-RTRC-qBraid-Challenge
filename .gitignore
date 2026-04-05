@@ -14,7 +14,8 @@ old/
 venv/
 env/
 ENV/
-
+data/
+old_readme/
 # Jupyter
 .ipynb_checkpoints/
 
