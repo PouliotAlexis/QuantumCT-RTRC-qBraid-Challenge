@@ -37,7 +37,7 @@ def solve_tsp_with_qaoa(distance_matrix: np.ndarray, p: int = 3) -> tuple[list[i
 
     # 3. Robust Optimizer
     # tol=1e-3 prevents COBYLA from stopping too early
-    optimizer = COBYLA(maxiter=150, tol=1e-3)
+    optimizer = COBYLA(maxiter=500, tol=1e-3)
 
     # 4. Aer Sampler (Fast simulation)
     sampler = StatevectorSampler()

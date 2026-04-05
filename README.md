@@ -143,7 +143,7 @@ graph LR
 |-----------|-------|-----------|
 | Ansatz | `RealAmplitudes` | Hardware-efficient; shallow depth, full entanglement |
 | `reps` | 3 | Increased expressibility for complex instances |
-| Optimizer | COBYLA | Derivative-free; robust on noisy sampled landscapes |
+| Optimizer | SPSA | Simultaneous Perturbation Stochastic Approximation; robust on noisy landscapes |
 | `maxiter` | 500 | Extended convergence budget for the variational loop |
 | Backend | `AerSimulator` | High-fidelity local simulation via Qiskit Aer |
 
@@ -167,8 +167,8 @@ graph LR
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
 | QAOA layers $p$ | Tunable | See discussion below |
-| Optimizer | COBYLA | Derivative-free; suitable for noisy circuit landscapes |
-| `maxiter` | 150 | Balanced convergence budget |
+| Optimizer | COBYLA | Derivative-free; suitable for smooth circuit landscapes |
+| `maxiter` | 500 | Balanced convergence budget |
 | `tol` | 1e-3 | Prevents premature termination |
 | Sampler | `StatevectorSampler` | Exact statevector for high-fidelity simulation |
 
@@ -196,7 +196,7 @@ Our architecture makes $p$ a simple configurable parameter, allowing us to incre
 |------|--------|-----|
 | Capacity partitioning | Classical sweep | Trivially solved classically; no quantum advantage |
 | Route optimization within cluster | SamplingVQE / QAOA | Discrete combinatorial search — quantum advantage domain |
-| Parameter training | COBYLA (classical outer loop) | Handles variational parameter landscape classically |
+| Parameter training | SPSA / COBYLA (classical outer loop) | Handles variational parameter landscape classically |
 
 ### Resource Efficiency by Design
 
