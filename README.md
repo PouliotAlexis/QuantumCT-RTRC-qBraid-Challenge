@@ -20,6 +20,7 @@
 9. [Setup & Usage](#9-setup--usage)
 10. [Scalability & Future Work](#10-scalability--future-work)
 11. [Development Team](#11-development-team)
+12. [References](#12-references)
 
 ---
 
@@ -342,6 +343,13 @@ The key insight: **geometric compactness of clusters directly correlates with qu
 - [**Gabriel Michaud**](https://github.com/GabMichaud)
 - [**Jasmin Pelletier**](https://github.com/Jas-pel)
 - [**Laurier Perron**](https://github.com/perl2548)
+
+---
+
+## 12. References
+
+1. Kim, J. S., Lee, D., & Ahn, C. W. (2026). *Quantum Heuristic Approach to Vehicle Routing Problem*. Mathematics, 14(6), 1026. [https://doi.org/10.3390/math14061026](https://doi.org/10.3390/math14061026)
+2. L. Palackal, B. Poggel, M. Wulff, H. Ehm, J. M. Lorenz and C. B. Mendl. (2023). *Quantum-Assisted Solution Paths for the Capacitated Vehicle Routing Problem*. IEEE International Conference on Quantum Computing and Engineering (QCE), Bellevue, WA, USA, 2023, pp. 648-658. [doi: 10.1109/QCE57702.2023.00080](https://doi.org/10.1109/QCE57702.2023.00080).
 
 ---
 
