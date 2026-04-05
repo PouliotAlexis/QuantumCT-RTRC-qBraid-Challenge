@@ -214,12 +214,12 @@ The quantum resource cost scales with **cluster size** (fixed by design at $\leq
 
 Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
 
-| Instance | Known Optimal | Our Solution | Approximation Ratio | Execution Time |
-|----------|--------------|--------------|---------------------|----------------|
-| 1 | 21.74 | 21.74 | 1.00 | ~6.0 s |
-| 2 | 26.18 | 26.18 | 1.00 | ~3.8 s |
-| 3 | 49.50 | 50.70 | 1.02 | ~7.2 s |
-| 4 | 61.85 *(heuristic)*| **51.24** | **0.83** ✓ | ~154.3 s |
+| Instance | Known Optimal | Our Solution | Approximation Ratio | Execution Time | # of Qubits | # of Gate Operations |
+|----------|--------------|--------------|---------------------|----------------|-------------|-----------------------|
+| 1 | 21.74 | 21.74 | 1.00 | ~6.0 s | 16 | 63 |
+| 2 | 26.18 | 26.18 | 1.00 | ~3.8 s | 9 | 50 |
+| 3 | 49.50 | 50.70 | 1.02 | ~7.2 s | 9 | 105 |
+| 4 | 61.85 *(heuristic)*| **59.66** | **0.96** ✓ | ~188.9 s | 16 | 500 |
 
 > **Approximation Ratio** = Our Solution / Known Optimal. Closer to 1.00 is better; below 1.00 means we outperform the reference.
 
@@ -243,18 +243,18 @@ r1: 0, 2, 1, 0
 r2: 0, 3, 0
 
 # Instance 3
-r1: 0, 6, 4, 0 
-r2: 0, 5, 3, 0 
+r1: 0, 6, 4, 0
+r2: 0, 5, 3, 0
 r3: 0, 1, 2, 0
 
 # Instance 4
-r1: 0, 6, 10, 9, 0 
-r2: 0, 12, 11, 0 
-r3: 0, 7, 8, 1, 0 
-r4: 0, 5, 3, 4, 0
+r1: 0, 9, 10, 6, 0
+r2: 0, 12, 11, 2, 0
+r3: 0, 7, 8, 1, 0
+r4: 0, 3, 4, 5, 0
 ```
 
-> Note: Instance 4's reference distance (61.85) is a heuristic bound, not a proven optimum. Our solution at 51.24 outperforms it.
+> Note: Instance 4's reference distance (61.85) is a heuristic bound, not a proven optimum. Our solution at 59.66 outperforms it.
 
 ---
 
