@@ -1,3 +1,4 @@
+import sys
 from time import time
 
 from utils.CVRPDataLoader import CVRPDataLoader
@@ -76,7 +77,4 @@ def main(instance_id: int) -> None:
 
 
 if __name__ == "__main__":
-    INSTANCE_ID = 1  # Between 1 and 4
-    main(INSTANCE_ID)
-    main(INSTANCE_ID)
-    main(INSTANCE_ID)
+    main(int(sys.argv[1]))
