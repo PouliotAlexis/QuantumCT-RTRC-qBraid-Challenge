@@ -6,7 +6,7 @@ from utils.data_loader import CVRPDataLoader
 from utils.distance import compute_distance_matrix_with_mapping, map_indices_to_node_ids
 from utils.metrics import calculate_total_distance, log_metrics_to_csv
 from utils.solution_storage import save_solution_to_txt
-from utils.tsp_solver import solve_tsp_with_vqe
+from utils.tsp_solver import solve_tsp_with_vqe as solve_tsp
 from utils.visualization import plot_solution
 
 
@@ -41,7 +41,7 @@ def main(instance_id: int, show_plot: bool = True) -> None:
     # 2. Solve TSP for each cluster using VQE
     for cluster in clusters:
         distance_matrix, node_ids = compute_distance_matrix_with_mapping(cluster)
-        route_indices, nq, ng, dp = solve_tsp_with_vqe(distance_matrix)
+        route_indices, nq, ng, dp = solve_tsp(distance_matrix)
         
         # Track maximum qubits used across all clusters
         max_nb_qubits = max(max_nb_qubits, nq)
@@ -107,8 +107,5 @@ if __name__ == "__main__":
         main(2, show_plot=False)
         main(3, show_plot=False)
         main(4, show_plot=False)
-
-        # Supplement
-        main(5, show_plot=False)
     else:
         main(int(arg), show_plot=True)

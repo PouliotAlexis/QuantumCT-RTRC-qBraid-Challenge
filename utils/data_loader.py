@@ -23,7 +23,6 @@ class CVRPDataLoader:
             2: self._load_instance_2,
             3: self._load_instance_3,
             4: self._load_instance_4,
-            5: self._load_instance_5,
         }
         if instance_id in instances:
             return instances[instance_id]()
