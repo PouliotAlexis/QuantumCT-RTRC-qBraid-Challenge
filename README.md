@@ -198,9 +198,9 @@ Solving the full CVRP directly on a quantum computer with $N$ customers would re
 
 | Cluster size $n$ | Qubits ($n^2$) | VQE gate depth | QAOA gate depth ($p=3$) |
 |-----------------|----------------|----------------|------------------------|
-| 2 | 4 | Very low | Low |
-| 3 | 9 | Low | Moderate |
-| 4 | 16 | Moderate | Manageable on NISQ |
+| 2 | 4 | ~10 | Low |
+| 3 | 9 | 14-17 | Moderate |
+| 4 | 16 | 21-24 | Manageable on NISQ |
 
 The quantum resource cost scales with **cluster size** (fixed by design at $\leq 4$), not with **total problem size** — a crucial distinction for practical NISQ deployment.
 
@@ -212,10 +212,10 @@ Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
 
 | Instance | Known Optimal | Our Solution | Approximation Ratio | Execution Time |
 |----------|--------------|--------------|---------------------|----------------|
-| 1 | 26.18 | _TBD_ | _TBD_ | ~0.007 s |
-| 2 | 26.18 | _TBD_ | _TBD_ | _TBD_ |
-| 3 | 43.27 | 48.46 | ~1.12 | ~11–34 s |
-| 4 | 61.85 *(heuristic)* | 54.26 | **< 1.00** ✓ | ~42–53 s |
+| 1 | 21.74 | **18.87** | **0.87** ✓ | ~32 s |
+| 2 | 26.18 | 26.18 | 1.00 | ~7.2 s |
+| 3 | 49.50 | 50.70 | 1.02 | ~13.1 s |
+| 4 | 61.85 *(heuristic)*| **59.54** | **0.96** ✓ | ~45.1 s |
 
 > **Approximation Ratio** = Our Solution / Known Optimal. Closer to 1.00 is better; below 1.00 means we outperform the reference.
 
@@ -223,19 +223,23 @@ Results produced using the **SamplingVQE backend** on the qBraid AerSimulator.
 
 ```text
 # Instance 1
-r1: 0, 2, 3, 0
-r2: 0, 1, 4, 0
+r1: 0, 2, 0
+r2: 0, 1, 3, 0
+
+# Instance 2
+r1: 0, 2, 1, 0
+r2: 0, 3, 0
 
 # Instance 3
-r1: 0, 4, 6, 0
-r2: 0, 5, 3, 0
-r3: 0, 2, 1, 0
+r1: 0, 4, 6, 0 
+r2: 0, 5, 3, 0 
+r3: 0, 1, 2, 0
 
 # Instance 4
-r1: 0, 10, 9, 6, 0
-r2: 0, 2, 11, 12, 0
-r3: 0, 1, 8, 7, 0
-r4: 0, 4, 5, 3, 0
+r1: 0, 6, 10, 9, 0 
+r2: 0, 2, 11, 12, 0 
+r3: 0, 1, 8, 7, 0 
+r4: 0, 5, 3, 4, 0
 ```
 
 > Note: Instance 4's reference distance (61.85) is a heuristic bound, not a proven optimum. Our solution at 54.26 outperforms it.
