@@ -4,7 +4,7 @@ from utils.CVRPDataLoader import CVRPDataLoader
 from utils.get_cluster import get_cluster_with_optimised_sweep
 from utils.get_distance_matrix import get_distance_matrix_with_ids, remap_route_indices
 from utils.save_crp_solutions import save_cvrp_solution
-from utils.save_instance_results import get_total_distance, save_instance_results
+from utils.save_instance_results import get_total_distance, save_run_results
 from utils.visualise import plot_instance, visualize_solution
 from utils.vqe import solve_tsp
 
@@ -46,6 +46,11 @@ def main(instance_id: int) -> None:
     # Calculate total Euclidean distance
     total_distance = get_total_distance(all_routes, data_instance["nodes"])
 
+    # Fill missing vehicle routes with [0, 0]
+    num_vehicles = data_instance.get("m_vehicles", len(all_routes))
+    while len(all_routes) < num_vehicles:
+        all_routes.append([0, 0])
+
     # Save results in the official format
     save_cvrp_solution(
         instance_id,
@@ -53,14 +58,16 @@ def main(instance_id: int) -> None:
         data_dir="data",
     )
 
-    # Save overall data with total distance
-    save_instance_results(
+    # Save overall data with total distance and routes
+    save_run_results(
         instance_id,
         max_nb_qubits,
         nb_total_gate,
         time() - start_time,
-        "data/data.csv",
+        "data/run_results.csv",
         total_distance,
+        all_routes,
+        data_instance,
     )
 
     # Commented out to avoid tkinter threading issues
@@ -69,5 +76,7 @@ def main(instance_id: int) -> None:
 
 
 if __name__ == "__main__":
-    INSTANCE_ID = 3  # Between 1 and 4
+    INSTANCE_ID = 1  # Between 1 and 4
+    main(INSTANCE_ID)
+    main(INSTANCE_ID)
     main(INSTANCE_ID)
