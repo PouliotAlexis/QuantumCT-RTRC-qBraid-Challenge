@@ -39,11 +39,16 @@ We employ a **"Cluster-First, Route-Second"** decomposition strategy — a princ
 
 ```mermaid
 graph TD
-    A["CVRP Instance - Sets 1-4"]
-    B["Phase 1 - Classical Optimized Sweep"]
-    C["Phase 2 - Quantum Routing"]
-    D["SamplingVQE"]
-    E["QAOA"]
+    A["CVRP Instance
+(custom or Sets 1-4)"]
+    B["Phase 1 — Classical
+Optimized Sweep
+capacity-aware
+clustering"]
+    C["Phase 2 — Quantum
+Routing"]
+    D["SamplingVQE (Simulation)"]
+    E["QAOA (Hardware-Ready)"]
     F["CVRP Solution"]
 
     A --> B
@@ -126,7 +131,7 @@ SamplingVQE is the backend used to produce our submitted results. It uses a **`R
 
 ```mermaid
 graph LR
-    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Eigen Optimizer"] --> D["RealAmplitudes"] --> E["Transpile to Aer"] --> F["Variational Optimization"] --> G["Optimal Route"]
+    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Eigen Optimizer"] --> D["RealAmplitudes Ansatz (reps=3)"] --> E["Transpile to Aer"] --> F["Variational Optimization"] --> G["Optimal Route"]
 ```
 
 
@@ -151,7 +156,7 @@ The QAOA implementation is maintained as the **path-to-hardware** backend. While
 
 ```mermaid
 graph LR
-    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Quadratic Program"] --> D["QUBO Conversion"] --> E["Ising Hamiltonian"] --> F["QAOA"] --> G["Variational Optimization"] --> H["Optimal Route"]
+    A["Distance Matrix"] --> B["TSP Formulation"] --> C["Quadratic Program"] --> D["QUBO Conversion"] --> E["Ising Hamiltonian"] --> F["QAOA Circuit"] --> G["Variational Optimization"] --> H["Optimal Route"]
 ```
 
 
